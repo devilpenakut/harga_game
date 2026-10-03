@@ -104,6 +104,20 @@ export async function onRequestGet({ request, env, waitUntil }) {
 const norm = (s) =>
   s.toLowerCase().replace(/[™®©]/g, "").replace(/[^a-z0-9]+/g, "");
 
+// Hanya anggap hasil relevan kalau judul memuat semua kata kunci query
+// (kata >= 3 huruf). Membuang hasil pencarian sampingan seperti
+// "Ace Robot Combat" saat mencari "ACE COMBAT 7".
+function relevan(name, q) {
+  const kata = q
+    .toLowerCase()
+    .replace(/[™®©]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 3);
+  if (!kata.length) return true;
+  const judul = norm(name);
+  return kata.every((w) => judul.includes(w));
+}
+
 async function getRates() {
   try {
     const r = await get("https://open.er-api.com/v6/latest/USD", { cf: { cacheTtl: 21600 } });
@@ -136,7 +150,9 @@ function offer(shop, platforms, amount, regular, currency, rates, url) {
 async function steam(q, env, rates) {
   const r = await get(`https://store.steampowered.com/api/storesearch/?term=${enc(q)}&l=english&cc=ID`);
   if (!r.ok) throw new Error(`Steam ${r.status}`);
-  const items = ((await r.json()).items || []).filter((i) => i.type === "app").slice(0, MAX);
+  const items = ((await r.json()).items || [])
+    .filter((i) => i.type === "app" && relevan(i.name, q))
+    .slice(0, MAX);
 
   const out = items.map((i) => {
     const plats = [];
@@ -218,6 +234,7 @@ async function playstation(q) {
   const out = [];
   for (const p of Object.values(state)) {
     if (!p || p.__typename !== "Product" || !p.name) continue;
+    if (!relevan(p.name, q)) continue;
     const cls = p.storeDisplayClassification || "";
     if (!/GAME|EDITION|BUNDLE/.test(cls)) continue;
     const price = deref(p.price);
@@ -239,7 +256,9 @@ async function xbox(q, rates) {
     `https://www.microsoft.com/msstoreapiprod/api/autosuggest?market=en-au&sources=DCatAll-Products&filter=%2BClientType%3AStoreWeb&counts=10&query=${enc(q)}`
   );
   if (!s.ok) throw new Error(`Xbox ${s.status}`);
-  const suggests = ((await s.json()).ResultSets?.[0]?.Suggests || []).filter((x) => x.Source === "Games");
+  const suggests = ((await s.json()).ResultSets?.[0]?.Suggests || []).filter(
+    (x) => x.Source === "Games" && relevan(x.Title || "", q)
+  );
   const ids = suggests
     .map((x) => (x.Metas || []).find((m) => m.Key === "BigCatalogId")?.Value)
     .filter(Boolean)
@@ -287,10 +306,12 @@ function xboxPrice(p) {
 // memakai ID yang sama; Malaysia hanya muncul kalau ID-nya kebetulan sama.
 async function nintendo(q, rates) {
   const s = await get(
-    `https://searching.nintendo-europe.com/en/select?q=${enc(q)}&fq=${enc("type:GAME AND system_type:nintendoswitch*")}&rows=${MAX}&wt=json`
+    `https://searching.nintendo-europe.com/en/select?q=${enc(q)}&fq=${enc("type:GAME AND system_type:nintendoswitch*")}&rows=${MAX * 4}&wt=json`
   );
   if (!s.ok) throw new Error(`Nintendo ${s.status}`);
-  const docs = ((await s.json()).response?.docs || []).filter((d) => d.nsuid_txt?.[0]);
+  const docs = ((await s.json()).response?.docs || [])
+    .filter((d) => d.nsuid_txt?.[0] && relevan(d.title, q))
+    .slice(0, MAX);
   if (!docs.length) return [];
   const ids = docs.map((d) => d.nsuid_txt[0]);
 
