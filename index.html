@@ -18,6 +18,23 @@
     --label: #FFD23F;
     --label-tinta: #1B1F3B;
     --diskon: #C81E3A;
+    color-scheme: light;
+
+    /* Skala jarak (basis 4px) — dikutip dari sistem desain Origin */
+    --sp-1: 0.25rem;  /*  4px */
+    --sp-2: 0.5rem;   /*  8px */
+    --sp-3: 0.75rem;  /* 12px */
+    --sp-4: 1rem;     /* 16px */
+    --sp-5: 1.25rem;  /* 20px */
+    --sp-6: 1.5rem;   /* 24px */
+    --sp-8: 2rem;     /* 32px */
+    --sp-10: 2.5rem;  /* 40px */
+    --sp-14: 3.5rem;  /* 56px */
+
+    /* Radius: kontrol kecil 8px, kartu 16px, pill penuh */
+    --r-kecil: 0.5rem;
+    --r-kartu: 1rem;
+    --r-pill: 99px;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -28,6 +45,7 @@
       --garis: #333963;
       --biru: #8EA2FF;
       --diskon: #FF7A8E;
+      color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
@@ -37,37 +55,40 @@
     background: var(--kertas);
     color: var(--tinta);
     font: 400 1rem/1.5 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
-    padding: calc(env(safe-area-inset-top, 0px) + 2rem) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 3rem);
+    padding: calc(env(safe-area-inset-top, 0px) + var(--sp-10)) var(--sp-5) calc(env(safe-area-inset-bottom, 0px) + var(--sp-14));
   }
   main { max-width: 44rem; margin: 0 auto; }
   h1 {
     font: 800 clamp(2.25rem, 9vw, 3.75rem)/0.95 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
     letter-spacing: -0.03em;
-    margin: 0 0 0.75rem;
+    margin: 0 0 var(--sp-3);
+    text-wrap: balance;
   }
-  .intro { color: var(--redup); margin: 0 0 1.75rem; max-width: 34rem; }
+  .intro { color: var(--redup); margin: 0 0 var(--sp-8); max-width: 34rem; }
 
-  form { display: flex; gap: 0.5rem; }
+  form { display: flex; gap: var(--sp-2); }
   input[type="search"] {
     flex: 1; min-width: 0;
     font: inherit; font-size: 1.0625rem;
-    padding: 0.85rem 1rem;
+    padding: 0.85rem var(--sp-4);
     color: var(--tinta); background: var(--lembar);
-    border: 2px solid var(--tinta); border-radius: 0.5rem;
+    border: 2px solid var(--tinta); border-radius: var(--r-kecil);
     -webkit-appearance: none; appearance: none;
   }
   button {
     font: 600 1rem/1 Figtree, system-ui, sans-serif;
-    padding: 0 1.25rem; cursor: pointer;
+    padding: 0 var(--sp-5); cursor: pointer;
     color: var(--kertas); background: var(--tinta);
-    border: 2px solid var(--tinta); border-radius: 0.5rem;
+    border: 2px solid var(--tinta); border-radius: var(--r-kecil);
   }
   button[disabled] { opacity: 0.6; cursor: progress; }
   :focus-visible { outline: 3px solid var(--biru); outline-offset: 2px; }
+  ::selection { background: var(--label); color: var(--label-tinta); }
+  input[type="search"]::placeholder { color: var(--redup); opacity: 1; }
 
-  .saring { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; }
+  .saring { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-4) 0 0; }
   .saring label {
-    padding: 0.35rem 0.8rem; border: 1.5px solid var(--garis); border-radius: 99px;
+    padding: var(--sp-1) var(--sp-3); border: 1.5px solid var(--garis); border-radius: var(--r-pill);
     font-size: 0.9375rem; cursor: pointer; color: var(--redup);
   }
   .saring input { position: absolute; opacity: 0; }
@@ -75,27 +96,27 @@
   .saring label:has(input:checked) { border-color: var(--tinta); background: var(--lembar); }
   .saring label:has(input:focus-visible) { outline: 3px solid var(--biru); outline-offset: 2px; }
 
-  #status { margin: 1.75rem 0 0; color: var(--redup); }
+  #status { margin: var(--sp-6) 0 0; color: var(--redup); }
   #status.galat { color: var(--diskon); }
 
   .game {
-    background: var(--lembar); border-radius: 0.75rem;
-    margin-top: 1rem; padding: 1.1rem 1.1rem 0.4rem;
+    background: var(--lembar); border-radius: var(--r-kartu);
+    margin-top: var(--sp-4); padding: var(--sp-5) var(--sp-5) var(--sp-2);
   }
-  .kepala { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  .kepala { display: flex; gap: var(--sp-4); align-items: flex-start; justify-content: space-between; }
   .kepala > div:first-child { min-width: 0; }
   .game h2 {
     font: 800 1.3rem/1.15 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
-    letter-spacing: -0.01em; margin: 0 0 0.25rem;
+    letter-spacing: -0.01em; margin: 0 0 var(--sp-1);
     overflow-wrap: anywhere;
   }
   .platform { color: var(--redup); font-size: 0.9375rem; margin: 0; }
 
   /* Badge tag: informasi kecil, tidak menyaingi label harga */
-  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-2); }
   .tag {
-    font-size: 0.75rem; line-height: 1; padding: 0.25rem 0.5rem;
-    border: 1px solid var(--garis); border-radius: 99px; color: var(--redup);
+    font-size: 0.75rem; line-height: 1; padding: var(--sp-1) var(--sp-2);
+    border: 1px solid var(--garis); border-radius: var(--r-pill); color: var(--redup);
     white-space: nowrap;
   }
   .tag.t-game { color: var(--tinta); border-color: var(--redup); font-weight: 600; }
@@ -113,7 +134,7 @@
   .termurah {
     flex: none; text-align: right;
     background: var(--label); color: var(--label-tinta);
-    padding: 0.45rem 0.75rem 0.5rem 1.4rem;
+    padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-5);
     clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0.9rem 100%, 0 50%);
     font-variant-numeric: tabular-nums;
   }
@@ -123,19 +144,19 @@
     white-space: nowrap;
   }
 
-  .toko { list-style: none; margin: 0.9rem 0 0; padding: 0; }
+  .toko { list-style: none; margin: var(--sp-4) 0 0; padding: 0; }
   .toko li {
-    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
-    padding: 0.7rem 0; border-top: 1px solid var(--garis);
+    display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-4);
+    padding: var(--sp-3) 0; border-top: 1px solid var(--garis);
     font-variant-numeric: tabular-nums;
   }
   .toko a { color: var(--biru); font-weight: 600; text-underline-offset: 3px; }
   .harga { text-align: right; white-space: nowrap; }
-  .harga s { color: var(--redup); font-size: 0.875rem; margin-right: 0.4rem; }
-  .harga .potong { color: var(--diskon); font-size: 0.875rem; font-weight: 600; margin-right: 0.4rem; }
+  .harga s { color: var(--redup); font-size: 0.875rem; margin-right: var(--sp-1); }
+  .harga .potong { color: var(--diskon); font-size: 0.875rem; font-weight: 600; margin-right: var(--sp-1); }
   .harga .asal { display: block; color: var(--redup); font-size: 0.8125rem; }
 
-  footer { margin-top: 2.5rem; color: var(--redup); font-size: 0.875rem; }
+  footer { margin-top: var(--sp-10); color: var(--redup); font-size: 0.875rem; text-wrap: pretty; }
 </style>
 </head>
 <body>

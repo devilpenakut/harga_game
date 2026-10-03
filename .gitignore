@@ -5,7 +5,11 @@ files.zip
 *.key
 itad.key
 *.mjs
-preview-tags.html
+preview-*.html
+
+# lampiran chat & dokumen referensi yang bukan bagian proyek
+.opencode/openwork/
+DESIGN.md
 
 # dev tooling: jangan commit isi node_modules
 .opencode/node_modules/
