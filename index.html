@@ -83,9 +83,11 @@
     margin-top: 1rem; padding: 1.1rem 1.1rem 0.4rem;
   }
   .kepala { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  .kepala > div:first-child { min-width: 0; }
   .game h2 {
     font: 800 1.3rem/1.15 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
     letter-spacing: -0.01em; margin: 0 0 0.25rem;
+    overflow-wrap: anywhere;
   }
   .platform { color: var(--redup); font-size: 0.9375rem; margin: 0; }
 
@@ -155,8 +157,8 @@
     <label><input type="radio" name="platform" value="switch"><span>Switch</span></label>
   </div>
 
-  <p id="status" aria-live="polite">Ketik nama game untuk melihat harganya.</p>
-  <div id="hasil"></div>
+  <p id="status" role="status" aria-live="polite">Ketik nama game untuk melihat harganya.</p>
+  <div id="hasil" aria-live="polite" aria-busy="false"></div>
 
   <footer>PC dan PlayStation memakai harga region Indonesia. Xbox memakai Australia dan Singapura, Switch memakai Malaysia dan Australia; harga bertanda ≈ dikonversi dengan kurs hari ini dan belum termasuk biaya transaksi luar negeri dari bank. Data diperbarui tiap jam.</footer>
 </main>
@@ -168,6 +170,12 @@ let data = null;
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// Hanya izinkan http(s): supaya tautan dari API tidak bisa jadi javascript:.
+const tautan = (u) => {
+  try { const x = new URL(String(u)); return (x.protocol === "http:" || x.protocol === "https:") ? esc(x.href) : "#"; }
+  catch { return "#"; }
+};
 
 function setStatus(teks, galat = false) {
   $("status").textContent = teks;
@@ -217,7 +225,7 @@ function render() {
       const diskon = o.idr && o.regularIdr && o.regularIdr > o.idr
         ? `<span class="potong">-${Math.round((1 - o.idr / o.regularIdr) * 100)}%</span><s>${rupiah.format(o.regularIdr)}</s>` : "";
       const asal = o.original ? `<span class="asal">${esc(o.original)}</span>` : "";
-      return `<li><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.shop)}</a>
+      return `<li><a href="${tautan(o.url)}" target="_blank" rel="noopener">${esc(o.shop)}</a>
         <span class="harga">${diskon}${hargaTeks(o)}${asal}</span></li>`;
     }).join("");
     return `<article class="game">
@@ -237,6 +245,7 @@ $("cari").addEventListener("submit", async (e) => {
   if (q.length < 2) return;
   $("tombol").disabled = true;
   $("hasil").innerHTML = "";
+  $("hasil").setAttribute("aria-busy", "true");
   setStatus("Mencari harga…");
   try {
     const r = await fetch("/api/search?q=" + encodeURIComponent(q));
@@ -251,6 +260,7 @@ $("cari").addEventListener("submit", async (e) => {
       : err.message, true);
   } finally {
     $("tombol").disabled = false;
+    $("hasil").setAttribute("aria-busy", "false");
   }
 });
 
