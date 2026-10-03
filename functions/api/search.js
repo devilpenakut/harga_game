@@ -71,8 +71,10 @@ export async function onRequestGet({ request, env, waitUntil }) {
     if (s.status !== "fulfilled") return;
     for (const item of s.value) {
       const key = norm(item.name);
-      if (!groups.has(key)) groups.set(key, { name: item.name, offers: [] });
-      groups.get(key).offers.push(...item.offers);
+      if (!groups.has(key)) groups.set(key, { name: item.name, offers: [], tags: [] });
+      const g = groups.get(key);
+      g.offers.push(...item.offers);
+      for (const t of item.tags || []) if (!g.tags.includes(t)) g.tags.push(t);
     }
   });
   if (!env.ITAD_KEY) sources.itad = "off";
@@ -146,6 +148,26 @@ function offer(shop, platforms, amount, regular, currency, rates, url) {
   };
 }
 
+// Tag dari nama (gratis, tanpa request). Contoh: "DELUXE EDITION" -> "Deluxe".
+function tagEdisi(nama) {
+  const m = nama.match(/\b(deluxe|ultimate|definitive|complete|gold|premium|standard|goty|game of the year)\b/i);
+  if (!m) return null;
+  return m[1].toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// Tipe produk dari appdetails.type -> label Indonesia.
+const TIPE = {
+  game: "Game",
+  dlc: "DLC",
+  music: "Soundtrack",
+  demo: "Demo",
+  mod: "Mod",
+  adventure: "Game",
+  series: "Seri",
+  video: "Video",
+  hardware: "Hardware",
+};
+
 /* ---------- PC / Mac ---------- */
 async function steam(q, env, rates) {
   const r = await get(`https://store.steampowered.com/api/storesearch/?term=${enc(q)}&l=english&cc=ID`);
@@ -154,7 +176,11 @@ async function steam(q, env, rates) {
     .filter((i) => i.type === "app" && relevan(i.name, q))
     .slice(0, MAX);
 
-  const out = items.map((i) => {
+  // Ambil detail paralel (type, genre, status). Dibungkus try agar gagal satu
+  // tidak menjatuhkan seluruh pencarian.
+  const details = await Promise.all(items.map((i) => ambilDetail(i.id)));
+
+  const out = items.map((i, n) => {
     const plats = [];
     if (i.platforms?.windows) plats.push("pc");
     if (i.platforms?.mac) plats.push("mac");
@@ -162,6 +188,7 @@ async function steam(q, env, rates) {
       id: i.id,
       name: i.name,
       plats,
+      tags: tagGame(i, details[n]),
       offers: [
         offer("Steam", plats,
           i.price ? i.price.final / 100 : null,
@@ -175,6 +202,57 @@ async function steam(q, env, rates) {
     try { await addItad(out, env.ITAD_KEY, rates); } catch {}
   }
   return out;
+}
+
+// Detail app Steam (1 request per game, di-cache Cloudflare 1 hari).
+async function ambilDetail(appid) {
+  try {
+    const r = await get(`https://store.steampowered.com/api/appdetails?appids=${appid}&l=english&cc=ID`, {
+      cf: { cacheTtl: 86400 },
+    });
+    if (!r.ok) return null;
+    return (await r.json())?.[appid]?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+// Tag dasar dari nama saja (untuk PS/Xbox/Switch yang tidak punya appdetails).
+function tagDasar(nama, klasifikasi) {
+  const tags = [];
+  if (/\bdlc\b|season pass|expansion|add-?on/i.test(nama)) tags.push("DLC");
+  else if (/soundtrack|\bost\b/i.test(nama)) tags.push("Soundtrack");
+  else if (/bundle/i.test(nama) || /BUNDLE/i.test(klasifikasi || "")) tags.push("Bundle");
+  else tags.push("Game");
+
+  const edisi = tagEdisi(nama);
+  if (edisi && !tags.includes(edisi)) tags.push(edisi);
+  return tags;
+}
+
+// Susun tag untuk sebuah game Steam.
+function tagGame(item, detail) {
+  const tags = [];
+  const tipe = TIPE[detail?.type];
+  if (tipe) tags.push(tipe);
+  else if (item.name) {
+    // Fallback dari nama kalau appdetails gagal
+    if (/\bdlc\b|season pass|expansion/i.test(item.name)) tags.push("DLC");
+    else if (/soundtrack|ost\b/i.test(item.name)) tags.push("Soundtrack");
+    else tags.push("Game");
+  }
+
+  for (const g of (detail?.genres || []).slice(0, 2)) if (g.description) tags.push(g.description);
+
+  const edisi = tagEdisi(item.name);
+  if (edisi && !tags.includes(edisi)) tags.push(edisi);
+
+  if (detail?.is_free) tags.push("Gratis");
+  else if (detail?.release_date?.coming_soon) tags.push("Belum rilis");
+
+  if (item.metascore) tags.push("Metascore " + item.metascore);
+
+  return tags;
 }
 
 async function addItad(games, key, rates) {
@@ -242,6 +320,7 @@ async function playstation(q) {
     const now = price.isFree ? 0 : num(price.discountedPrice || price.basePrice);
     out.push({
       name: p.name,
+      tags: tagDasar(p.name, cls),
       offers: [offer("PlayStation Store Indonesia", ["ps"], now, num(price.basePrice), "IDR", {},
         `https://store.playstation.com/en-id/product/${p.id}`)],
     });
@@ -279,7 +358,10 @@ async function xbox(q, rates) {
       const price = xboxPrice(p);
       if (!price) continue;
       const id = p.ProductId;
-      if (!byId.has(id)) byId.set(id, { name: p.LocalizedProperties?.[0]?.ProductTitle || id, offers: [] });
+      if (!byId.has(id)) {
+        const nama = p.LocalizedProperties?.[0]?.ProductTitle || id;
+        byId.set(id, { name: nama, tags: tagDasar(nama), offers: [] });
+      }
       byId.get(id).offers.push(
         offer(mk.label, ["xbox"], price.ListPrice, price.MSRP, price.CurrencyCode, rates,
           `https://www.xbox.com/${mk.lang}/games/store/-/${id}`)
@@ -319,7 +401,7 @@ async function nintendo(q, rates) {
     { code: "MY", label: "Nintendo eShop Malaysia", fallback: "MYR" },
     { code: "AU", label: "Nintendo eShop Australia", fallback: "AUD" },
   ];
-  const byId = new Map(docs.map((d) => [d.nsuid_txt[0], { name: d.title, offers: [] }]));
+  const byId = new Map(docs.map((d) => [d.nsuid_txt[0], { name: d.title, tags: tagDasar(d.title), offers: [] }]));
   await Promise.all(markets.map(async (mk) => {
     const r = await get(`https://api.ec.nintendo.com/v1/price?country=${mk.code}&lang=en&ids=${ids.join(",")}`);
     if (!r.ok) return;

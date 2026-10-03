@@ -4,15 +4,6 @@ files.zip
 .env.*
 *.key
 itad.key
-test-local.mjs
-test-cache.mjs
-test-cache-fallback.mjs
-norm-test.mjs
-nint-test.mjs
-reproduce.mjs
-live-test.mjs
-rel-test.mjs
-e2e-test.mjs
-reg-test.mjs
 *.mjs
+preview-tags.html
 

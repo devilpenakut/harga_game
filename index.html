@@ -89,6 +89,24 @@
   }
   .platform { color: var(--redup); font-size: 0.9375rem; margin: 0; }
 
+  /* Badge tag: informasi kecil, tidak menyaingi label harga */
+  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.5rem; }
+  .tag {
+    font-size: 0.75rem; line-height: 1; padding: 0.25rem 0.5rem;
+    border: 1px solid var(--garis); border-radius: 99px; color: var(--redup);
+    white-space: nowrap;
+  }
+  .tag.t-game { color: var(--tinta); border-color: var(--redup); font-weight: 600; }
+  .tag.t-dlc { color: #92500A; border-color: #E3B778; background: #FBF1E1; }
+  .tag.t-ost { color: #6B4BA8; border-color: #C9B6E8; background: #F3EEFB; }
+  .tag.t-gratis { color: #14683C; border-color: #A6D9BE; background: #E9F7EF; }
+  .tag.t-soon { color: #92500A; border-color: #E3B778; background: #FBF1E1; }
+  @media (prefers-color-scheme: dark) {
+    .tag.t-dlc, .tag.t-soon { color: #F0C88A; background: #2E2618; border-color: #6E5A34; }
+    .tag.t-ost { color: #C7B0EA; background: #262038; border-color: #514268; }
+    .tag.t-gratis { color: #8FD8B0; background: #16281E; border-color: #356148; }
+  }
+
   /* Label harga kuning: satu-satunya elemen yang menonjol */
   .termurah {
     flex: none; text-align: right;
@@ -189,6 +207,12 @@ function render() {
   $("hasil").innerHTML = games.map((g) => {
     const best = g.offers.find((o) => o.idr !== null) || g.offers[0];
     const plats = Object.keys(NAMA).filter((k) => g.offers.some((o) => o.platforms.includes(k)));
+    const badge = (g.tags || []).map((t) => {
+      const kelas = t === "Game" ? "t-game" : t === "DLC" ? "t-dlc"
+        : t === "Soundtrack" ? "t-ost" : t === "Gratis" ? "t-gratis"
+        : t === "Belum rilis" ? "t-soon" : "";
+      return `<span class="tag ${kelas}">${esc(t)}</span>`;
+    }).join("");
     const baris = g.offers.map((o) => {
       const diskon = o.idr && o.regularIdr && o.regularIdr > o.idr
         ? `<span class="potong">-${Math.round((1 - o.idr / o.regularIdr) * 100)}%</span><s>${rupiah.format(o.regularIdr)}</s>` : "";
@@ -198,7 +222,8 @@ function render() {
     }).join("");
     return `<article class="game">
       <div class="kepala">
-        <div><h2>${esc(g.name)}</h2><p class="platform">${plats.map((k) => NAMA[k]).join(", ")}</p></div>
+        <div><h2>${esc(g.name)}</h2><p class="platform">${plats.map((k) => NAMA[k]).join(", ")}</p>
+          <div class="tags">${badge}</div></div>
         <div class="termurah"><small>Termurah di ${esc(best.shop)}</small><strong>${hargaTeks(best)}</strong></div>
       </div>
       <ul class="toko">${baris}</ul>
