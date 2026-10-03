@@ -163,10 +163,6 @@ const TIPE = {
   music: "Soundtrack",
   demo: "Demo",
   mod: "Mod",
-  adventure: "Game",
-  series: "Seri",
-  video: "Video",
-  hardware: "Hardware",
 };
 
 /* ---------- PC / Mac ---------- */
@@ -234,15 +230,8 @@ function tagDasar(nama, klasifikasi) {
 
 // Susun tag untuk sebuah game Steam.
 function tagGame(item, detail) {
-  const tags = [];
-  const tipe = TIPE[detail?.type];
-  if (tipe) tags.push(tipe);
-  else if (item.name) {
-    // Fallback dari nama kalau appdetails gagal
-    if (/\bdlc\b|season pass|expansion/i.test(item.name)) tags.push("DLC");
-    else if (/soundtrack|ost\b/i.test(item.name)) tags.push("Soundtrack");
-    else tags.push("Game");
-  }
+  // Tipe dari appdetails; fallback dari nama kalau detail tidak ada.
+  const tags = [TIPE[detail?.type] || tagDasar(item.name)[0]];
 
   for (const g of (detail?.genres || []).slice(0, 2)) if (g.description) tags.push(g.description);
 
@@ -261,17 +250,13 @@ function tagGame(item, detail) {
 }
 
 // Tanggal rilis ringkas: "23 Feb 2027", atau null kalau tidak diketahui.
-const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 function tanggalRilis(detail) {
   const d = detail?.release_date?.date;
   if (!d) return null;
-  // Steam memakai format "23 Feb, 2027" atau "2027" atau "Q1 2027"
-  const m = d.match(/^(\d{1,2})\s+([A-Za-z]{3}),?\s*(\d{4})$/);
-  if (m) {
-    const bln = BULAN[["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(m[2].toLowerCase())];
-    return `${m[1]} ${bln || m[2]} ${m[3]}`;
-  }
-  return d; // "2027", "Segera hadir", dll. — tampilkan apa adanya
+  // Steam memakai format "23 Feb, 2027"; format lain ("2027", "Q1 2027") apa adanya.
+  const t = Date.parse(d);
+  if (Number.isNaN(t)) return d;
+  return new Date(t).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
 async function addItad(games, key, rates) {
@@ -283,12 +268,8 @@ async function addItad(games, key, rates) {
   });
   if (!lr.ok) throw new Error(`ITAD lookup ${lr.status}`);
   const map = await lr.json();
-
-  const valid = [];
-  for (const g of games) {
-    g.itadId = map[`app/${g.id}`] || null;
-    if (g.itadId) valid.push(g.itadId);
-  }
+  for (const g of games) g.itadId = map[`app/${g.id}`] || null;
+  const valid = games.map((g) => g.itadId).filter(Boolean);
   if (!valid.length) return;
 
   const r = await get(`${ITAD}/games/prices/v3?key=${key}&country=ID`, {
