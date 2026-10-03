@@ -146,30 +146,47 @@ async function steam(q, env, rates) {
 }
 
 async function addItad(games, key, rates) {
-  const ids = await Promise.all(
-    games.map((g) =>
-      get(`${ITAD}/games/lookup/v1?key=${key}&appid=${g.id}`)
-        .then((r) => r.json())
-        .then((d) => (d.found ? d.game.id : null))
-        .catch(() => null)
-    )
-  );
-  const valid = ids.filter(Boolean);
+  // Satu request untuk semua appid (bukan satu per game)
+  const lr = await get(`${ITAD}/lookup/id/shop/61/v1?key=${key}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(games.map((g) => `app/${g.id}`)),
+  });
+  if (!lr.ok) throw new Error(`ITAD lookup ${lr.status}`);
+  const map = await lr.json();
+
+  const valid = [];
+  for (const g of games) {
+    g.itadId = map[`app/${g.id}`] || null;
+    if (g.itadId) valid.push(g.itadId);
+  }
   if (!valid.length) return;
+
   const r = await get(`${ITAD}/games/prices/v3?key=${key}&country=ID`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(valid),
   });
   if (!r.ok) throw new Error(`ITAD ${r.status}`);
+  const byItadId = new Map(games.filter((g) => g.itadId).map((g) => [g.itadId, g]));
+
   for (const row of await r.json()) {
-    const g = games[ids.indexOf(row.id)];
+    const g = byItadId.get(row.id);
     if (!g) continue;
     for (const d of row.deals || []) {
       if (!d.shop || d.shop.name === "Steam") continue;
-      g.offers.push(offer(d.shop.name, g.plats, d.price.amount, d.regular.amount, d.price.currency, rates, d.url));
+      g.offers.push(offer(d.shop.name, itadPlats(d, g.plats), d.price.amount, d.regular.amount, d.price.currency, rates, d.url));
     }
   }
+}
+
+// Platform dari data ITAD; kalau kosong, pakai daftar platform Steam.
+function itadPlats(deal, fallback) {
+  const names = (deal.platforms || []).map((p) => (p.name || "").toLowerCase());
+  const plats = [];
+  if (names.some((n) => n.includes("windows") || n.includes("pc"))) plats.push("pc");
+  if (names.some((n) => n.includes("mac"))) plats.push("mac");
+  return plats.length ? plats : fallback;
 }
 
 /* ---------- PlayStation Store Indonesia ---------- */

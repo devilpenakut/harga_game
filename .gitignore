@@ -1,2 +1,8 @@
 extracted/
 files.zip
+.env
+.env.*
+*.key
+itad.key
+test-local.mjs
+
