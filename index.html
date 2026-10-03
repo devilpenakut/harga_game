@@ -6,21 +6,26 @@
 <title>Harga Game Termurah</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --kertas: #EEF0F6;
-    --lembar: #FFFFFF;
+    /* Permukaan — color-step, bukan shadow (prinsip Origin) */
+    --kertas: #F4F5F9;   /* kanvas */
+    --lembar: #FFFFFF;   /* kartu */
+    --lembar-2: #ECEEF4; /* kartu tenggelam / hover */
     --tinta: #1B1F3B;
     --redup: #636A8C;
     --garis: #D5D9E8;
     --biru: #2D4BDB;
-    --label: #FFD23F;
+    --label: #FFD23F;       /* kuning harga termurah — dipertahankan */
     --label-tinta: #1B1F3B;
     --diskon: #C81E3A;
+    /* Aksen iris dari Origin, dipakai untuk badge/aksen sekunder */
+    --iris: #5B54E8;
+    --iris-lembut: #EEECFE;
     color-scheme: light;
 
-    /* Skala jarak (basis 4px) — dikutip dari sistem desain Origin */
+    /* Skala jarak (basis 4px) — dari sistem desain Origin */
     --sp-1: 0.25rem;  /*  4px */
     --sp-2: 0.5rem;   /*  8px */
     --sp-3: 0.75rem;  /* 12px */
@@ -31,20 +36,28 @@
     --sp-10: 2.5rem;  /* 40px */
     --sp-14: 3.5rem;  /* 56px */
 
-    /* Radius: kontrol kecil 8px, kartu 16px, pill penuh */
+    /* Radius: kontrol 8px, kartu 16px, pill penuh (dari Origin) */
     --r-kecil: 0.5rem;
     --r-kartu: 1rem;
     --r-pill: 99px;
+
+    /* Tiga suara tipografi (prinsip inti Origin) */
+    --f-display: "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    --f-ui: Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --f-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --kertas: #14172B;
       --lembar: #1E2240;
+      --lembar-2: #262B4D;
       --tinta: #ECEEF8;
       --redup: #9AA1C4;
       --garis: #333963;
       --biru: #8EA2FF;
       --diskon: #FF7A8E;
+      --iris: #A79BFF;
+      --iris-lembut: #2A2750;
       color-scheme: dark;
     }
   }
@@ -54,12 +67,12 @@
     margin: 0;
     background: var(--kertas);
     color: var(--tinta);
-    font: 400 1rem/1.5 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font: 400 1rem/1.5 var(--f-ui);
     padding: calc(env(safe-area-inset-top, 0px) + var(--sp-10)) var(--sp-5) calc(env(safe-area-inset-bottom, 0px) + var(--sp-14));
   }
   main { max-width: 44rem; margin: 0 auto; }
   h1 {
-    font: 800 clamp(2.25rem, 9vw, 3.75rem)/0.95 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    font: 800 clamp(2.25rem, 9vw, 3.75rem)/0.95 var(--f-display);
     letter-spacing: -0.03em;
     margin: 0 0 var(--sp-3);
     text-wrap: balance;
@@ -76,7 +89,8 @@
     -webkit-appearance: none; appearance: none;
   }
   button {
-    font: 600 1rem/1 Figtree, system-ui, sans-serif;
+    font: 500 0.9375rem/1 var(--f-mono);
+    letter-spacing: 0.02em;
     padding: 0 var(--sp-5); cursor: pointer;
     color: var(--kertas); background: var(--tinta);
     border: 2px solid var(--tinta); border-radius: var(--r-kecil);
@@ -89,10 +103,11 @@
   .saring { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-4) 0 0; }
   .saring label {
     padding: var(--sp-1) var(--sp-3); border: 1.5px solid var(--garis); border-radius: var(--r-pill);
-    font-size: 0.9375rem; cursor: pointer; color: var(--redup);
+    font: 400 0.8125rem/1.4 var(--f-mono); letter-spacing: 0.02em;
+    cursor: pointer; color: var(--redup);
   }
   .saring input { position: absolute; opacity: 0; }
-  .saring input:checked + span { color: var(--tinta); font-weight: 600; }
+  .saring input:checked + span { color: var(--tinta); font-weight: 500; }
   .saring label:has(input:checked) { border-color: var(--tinta); background: var(--lembar); }
   .saring label:has(input:focus-visible) { outline: 3px solid var(--biru); outline-offset: 2px; }
 
@@ -106,20 +121,21 @@
   .kepala { display: flex; gap: var(--sp-4); align-items: flex-start; justify-content: space-between; }
   .kepala > div:first-child { min-width: 0; }
   .game h2 {
-    font: 800 1.3rem/1.15 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    font: 800 1.3rem/1.15 var(--f-display);
     letter-spacing: -0.01em; margin: 0 0 var(--sp-1);
     overflow-wrap: anywhere;
   }
-  .platform { color: var(--redup); font-size: 0.9375rem; margin: 0; }
+  .platform { color: var(--redup); font: 400 0.75rem/1.4 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
 
-  /* Badge tag: informasi kecil, tidak menyaingi label harga */
+  /* Badge tag: mono uppercase, ciri label teknis Origin */
   .tags { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-2); }
   .tag {
-    font-size: 0.75rem; line-height: 1; padding: var(--sp-1) var(--sp-2);
+    font: 400 0.6875rem/1 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase;
+    padding: var(--sp-1) var(--sp-2);
     border: 1px solid var(--garis); border-radius: var(--r-pill); color: var(--redup);
     white-space: nowrap;
   }
-  .tag.t-game { color: var(--tinta); border-color: var(--redup); font-weight: 600; }
+  .tag.t-game { color: var(--iris); border-color: var(--iris); background: var(--iris-lembut); font-weight: 500; }
   .tag.t-dlc { color: #92500A; border-color: #E3B778; background: #FBF1E1; }
   .tag.t-ost { color: #6B4BA8; border-color: #C9B6E8; background: #F3EEFB; }
   .tag.t-gratis { color: #14683C; border-color: #A6D9BE; background: #E9F7EF; }
@@ -138,9 +154,12 @@
     clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0.9rem 100%, 0 50%);
     font-variant-numeric: tabular-nums;
   }
-  .termurah small { display: block; font-size: 0.75rem; line-height: 1.2; max-width: 9rem; margin-left: auto; }
+  .termurah small {
+    display: block; max-width: 9rem; margin-left: auto;
+    font: 400 0.6875rem/1.3 var(--f-mono); letter-spacing: 0.04em; text-transform: uppercase;
+  }
   .termurah strong {
-    font: 800 1.25rem/1.1 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    font: 800 1.25rem/1.1 var(--f-display);
     white-space: nowrap;
   }
 
@@ -151,10 +170,10 @@
     font-variant-numeric: tabular-nums;
   }
   .toko a { color: var(--biru); font-weight: 600; text-underline-offset: 3px; }
-  .harga { text-align: right; white-space: nowrap; }
-  .harga s { color: var(--redup); font-size: 0.875rem; margin-right: var(--sp-1); }
-  .harga .potong { color: var(--diskon); font-size: 0.875rem; font-weight: 600; margin-right: var(--sp-1); }
-  .harga .asal { display: block; color: var(--redup); font-size: 0.8125rem; }
+  .harga { text-align: right; white-space: nowrap; font-family: var(--f-mono); font-size: 0.9375rem; }
+  .harga s { color: var(--redup); font-size: 0.8125rem; margin-right: var(--sp-1); }
+  .harga .potong { color: var(--diskon); font-size: 0.8125rem; font-weight: 500; margin-right: var(--sp-1); }
+  .harga .asal { display: block; color: var(--redup); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
 
   footer { margin-top: var(--sp-10); color: var(--redup); font-size: 0.875rem; text-wrap: pretty; }
 </style>
