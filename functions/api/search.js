@@ -75,6 +75,7 @@ export async function onRequestGet({ request, env, waitUntil }) {
       const g = groups.get(key);
       g.offers.push(...item.offers);
       for (const t of item.tags || []) if (!g.tags.includes(t)) g.tags.push(t);
+      if (!g.release && item.release) g.release = item.release;
     }
   });
   if (!env.ITAD_KEY) sources.itad = "off";
@@ -189,6 +190,7 @@ async function steam(q, env, rates) {
       name: i.name,
       plats,
       tags: tagGame(i, details[n]),
+      release: tanggalRilis(details[n]),
       offers: [
         offer("Steam", plats,
           i.price ? i.price.final / 100 : null,
@@ -247,12 +249,29 @@ function tagGame(item, detail) {
   const edisi = tagEdisi(item.name);
   if (edisi && !tags.includes(edisi)) tags.push(edisi);
 
+  const soon = detail?.release_date?.coming_soon;
+  const adaHarga = item.price && item.price.final != null;
   if (detail?.is_free) tags.push("Gratis");
-  else if (detail?.release_date?.coming_soon) tags.push("Belum rilis");
+  else if (soon && adaHarga) tags.push("Pre-order");
+  else if (soon) tags.push("Belum rilis");
 
   if (item.metascore) tags.push("Metascore " + item.metascore);
 
   return tags;
+}
+
+// Tanggal rilis ringkas: "23 Feb 2027", atau null kalau tidak diketahui.
+const BULAN = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+function tanggalRilis(detail) {
+  const d = detail?.release_date?.date;
+  if (!d) return null;
+  // Steam memakai format "23 Feb, 2027" atau "2027" atau "Q1 2027"
+  const m = d.match(/^(\d{1,2})\s+([A-Za-z]{3}),?\s*(\d{4})$/);
+  if (m) {
+    const bln = BULAN[["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"].indexOf(m[2].toLowerCase())];
+    return `${m[1]} ${bln || m[2]} ${m[3]}`;
+  }
+  return d; // "2027", "Segera hadir", dll. — tampilkan apa adanya
 }
 
 async function addItad(games, key, rates) {

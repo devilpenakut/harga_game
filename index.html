@@ -159,6 +159,8 @@
     overflow-wrap: anywhere;
   }
   .platform { color: var(--redup); font: 400 0.75rem/1.4 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
+  /* Tanggal rilis: data readout mono, sejajar dengan platform */
+  .rilis { color: var(--biru); font: 500 0.75rem/1.4 var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; margin: var(--sp-1) 0 0; }
 
   /* Badge tag: mono uppercase, ciri label teknis Origin */
   .tags { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-2); }
@@ -173,6 +175,7 @@
   .tag.t-dlc { color: var(--void); border-color: var(--orchid-bloom); background: var(--orchid-bloom); }
   .tag.t-ost { color: var(--void); border-color: var(--periwinkle); background: var(--periwinkle); }
   .tag.t-gratis { color: var(--void); border-color: var(--cyan-signal); background: var(--cyan-signal); }
+  .tag.t-preorder { color: var(--void); border-color: var(--deep-iris); background: var(--pale-iris); }
   .tag.t-soon { color: var(--void); border-color: var(--silver); background: var(--silver); }
 
   /* Label harga kuning: satu-satunya elemen yang menonjol */
@@ -259,8 +262,8 @@ function setStatus(teks, galat = false) {
 }
 
 function hargaTeks(o) {
-  if (o.idr === null) return "Gratis atau belum rilis";
   if (o.idr === 0) return "Gratis";
+  if (o.idr === null) return "Harga belum tersedia";
   return (o.converted ? "≈ " : "") + rupiah.format(o.idr);
 }
 
@@ -294,9 +297,10 @@ function render() {
     const badge = (g.tags || []).map((t) => {
       const kelas = t === "Game" ? "t-game" : t === "DLC" ? "t-dlc"
         : t === "Soundtrack" ? "t-ost" : t === "Gratis" ? "t-gratis"
-        : t === "Belum rilis" ? "t-soon" : "";
+        : t === "Pre-order" ? "t-preorder" : t === "Belum rilis" ? "t-soon" : "";
       return `<span class="tag ${kelas}">${esc(t)}</span>`;
     }).join("");
+    const rilis = g.release ? `<p class="rilis">Rilis ${esc(g.release)}</p>` : "";
     const baris = g.offers.map((o) => {
       const diskon = o.idr && o.regularIdr && o.regularIdr > o.idr
         ? `<span class="potong">-${Math.round((1 - o.idr / o.regularIdr) * 100)}%</span><s>${rupiah.format(o.regularIdr)}</s>` : "";
@@ -306,7 +310,7 @@ function render() {
     }).join("");
     return `<article class="game">
       <div class="kepala">
-        <div><h2>${esc(g.name)}</h2><p class="platform">${plats.map((k) => NAMA[k]).join(", ")}</p>
+        <div><h2>${esc(g.name)}</h2><p class="platform">${plats.map((k) => NAMA[k]).join(", ")}${rilis}</p>
           <div class="tags">${badge}</div></div>
         <div class="termurah"><small>Termurah di ${esc(best.shop)}</small><strong>${hargaTeks(best)}</strong></div>
       </div>
