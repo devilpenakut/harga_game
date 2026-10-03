@@ -7,3 +7,11 @@ itad.key
 *.mjs
 preview-tags.html
 
+# dev tooling: jangan commit isi node_modules
+.opencode/node_modules/
+node_modules/
+
+# impeccable: launcher akan mengunduh binary platform ini saat pertama dipakai
+.opencode/skills/impeccable/scripts/bin/
+.opencode/skills/impeccable/scripts/data/font-index.json
+
