@@ -41,6 +41,13 @@
     /* Aksen memakai token Origin asli */
     --iris: var(--iris-gleam);
     --iris-lembut: #EFEDFF;
+
+    /* ===== Surface stepping (prinsip Origin: depth lewat warna, bukan shadow) =====
+       Lingkup kartu: 0 kanvas -> 1 kartu -> 2 area terangkat -> 3 hover/tertekan */
+    --srf-0: var(--kertas);   /* kanvas halaman */
+    --srf-1: var(--lembar);   /* kartu game */
+    --srf-2: var(--lembar-2); /* area di dalam kartu (daftar toko) */
+    --srf-3: #E2E5EE;         /* hover/pressed (Steel #3f4041 terlalu gelap utk tema terang) */
     color-scheme: light;
 
     /* Skala jarak (basis 4px) — dari sistem desain Origin */
@@ -66,7 +73,7 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      /* Surface Origin persis: Obsidian canvas, Graphite card */
+      /* Surface Origin persis: Obsidian canvas, Graphite card, Steel hover */
       --kertas: var(--obsidian);
       --lembar: #1b1c1e;
       --lembar-2: var(--graphite);
@@ -77,6 +84,11 @@
       --diskon: #FF7A8E;
       --iris: var(--pale-iris);
       --iris-lembut: #26253d;
+      /* Surface stepping versi gelap — Obsidian -> Graphite -> Steel */
+      --srf-0: var(--obsidian);
+      --srf-1: #1b1c1e;
+      --srf-2: var(--graphite);
+      --srf-3: var(--steel);
       color-scheme: dark;
     }
   }
@@ -125,16 +137,18 @@
     font: 400 0.8125rem/1.4 var(--f-mono); letter-spacing: 0.02em;
     cursor: pointer; color: var(--redup);
   }
+  .saring label:hover { background: var(--srf-2); }
   .saring input { position: absolute; opacity: 0; }
   .saring input:checked + span { color: var(--tinta); font-weight: 500; }
-  .saring label:has(input:checked) { border-color: var(--tinta); background: var(--lembar); }
+  .saring label:has(input:checked) { border-color: var(--tinta); background: var(--srf-1); }
   .saring label:has(input:focus-visible) { outline: 3px solid var(--biru); outline-offset: 2px; }
 
   #status { margin: var(--sp-6) 0 0; color: var(--redup); }
   #status.galat { color: var(--diskon); }
 
+  /* Kartu = permukaan tingkat 1; area toko = tingkat 2 (depth lewat warna) */
   .game {
-    background: var(--lembar); border-radius: var(--r-kartu);
+    background: var(--srf-1); border-radius: var(--r-kartu);
     margin-top: var(--sp-4); padding: var(--sp-5) var(--sp-5) var(--sp-2);
   }
   .kepala { display: flex; gap: var(--sp-4); align-items: flex-start; justify-content: space-between; }
@@ -178,12 +192,19 @@
     white-space: nowrap;
   }
 
-  .toko { list-style: none; margin: var(--sp-4) 0 0; padding: 0; }
+  /* Daftar toko = permukaan tingkat 2 di dalam kartu (srf-1).
+     Depth lewat warna, bukan shadow — prinsip Origin. */
+  .toko {
+    list-style: none; margin: var(--sp-4) 0 0; padding: 0 var(--sp-4);
+    background: var(--srf-2); border-radius: var(--r-kecil);
+  }
   .toko li {
     display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-4);
     padding: var(--sp-3) 0; border-top: 1px solid var(--garis);
     font-variant-numeric: tabular-nums;
   }
+  .toko li:first-child { border-top: 0; }
+  .toko li:hover { background: var(--srf-3); }
   .toko a { color: var(--biru); font-weight: 600; text-underline-offset: 3px; }
   .harga { text-align: right; white-space: nowrap; font-family: var(--f-mono); font-size: 0.9375rem; }
   .harga s { color: var(--redup); font-size: 0.8125rem; margin-right: var(--sp-1); }
