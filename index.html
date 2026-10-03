@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Harga Game Termurah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kertas: #EEF0F6;
+    --lembar: #FFFFFF;
+    --tinta: #1B1F3B;
+    --redup: #636A8C;
+    --garis: #D5D9E8;
+    --biru: #2D4BDB;
+    --label: #FFD23F;
+    --label-tinta: #1B1F3B;
+    --diskon: #C81E3A;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --kertas: #14172B;
+      --lembar: #1E2240;
+      --tinta: #ECEEF8;
+      --redup: #9AA1C4;
+      --garis: #333963;
+      --biru: #8EA2FF;
+      --diskon: #FF7A8E;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--kertas);
+    color: var(--tinta);
+    font: 400 1rem/1.5 Figtree, system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: calc(env(safe-area-inset-top, 0px) + 2rem) 1.25rem calc(env(safe-area-inset-bottom, 0px) + 3rem);
+  }
+  main { max-width: 44rem; margin: 0 auto; }
+  h1 {
+    font: 800 clamp(2.25rem, 9vw, 3.75rem)/0.95 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.75rem;
+  }
+  .intro { color: var(--redup); margin: 0 0 1.75rem; max-width: 34rem; }
+
+  form { display: flex; gap: 0.5rem; }
+  input[type="search"] {
+    flex: 1; min-width: 0;
+    font: inherit; font-size: 1.0625rem;
+    padding: 0.85rem 1rem;
+    color: var(--tinta); background: var(--lembar);
+    border: 2px solid var(--tinta); border-radius: 0.5rem;
+    -webkit-appearance: none; appearance: none;
+  }
+  button {
+    font: 600 1rem/1 Figtree, system-ui, sans-serif;
+    padding: 0 1.25rem; cursor: pointer;
+    color: var(--kertas); background: var(--tinta);
+    border: 2px solid var(--tinta); border-radius: 0.5rem;
+  }
+  button[disabled] { opacity: 0.6; cursor: progress; }
+  :focus-visible { outline: 3px solid var(--biru); outline-offset: 2px; }
+
+  .saring { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; }
+  .saring label {
+    padding: 0.35rem 0.8rem; border: 1.5px solid var(--garis); border-radius: 99px;
+    font-size: 0.9375rem; cursor: pointer; color: var(--redup);
+  }
+  .saring input { position: absolute; opacity: 0; }
+  .saring input:checked + span { color: var(--tinta); font-weight: 600; }
+  .saring label:has(input:checked) { border-color: var(--tinta); background: var(--lembar); }
+  .saring label:has(input:focus-visible) { outline: 3px solid var(--biru); outline-offset: 2px; }
+
+  #status { margin: 1.75rem 0 0; color: var(--redup); }
+  #status.galat { color: var(--diskon); }
+
+  .game {
+    background: var(--lembar); border-radius: 0.75rem;
+    margin-top: 1rem; padding: 1.1rem 1.1rem 0.4rem;
+  }
+  .kepala { display: flex; gap: 1rem; align-items: flex-start; justify-content: space-between; }
+  .game h2 {
+    font: 800 1.3rem/1.15 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    letter-spacing: -0.01em; margin: 0 0 0.25rem;
+  }
+  .platform { color: var(--redup); font-size: 0.9375rem; margin: 0; }
+
+  /* Label harga kuning: satu-satunya elemen yang menonjol */
+  .termurah {
+    flex: none; text-align: right;
+    background: var(--label); color: var(--label-tinta);
+    padding: 0.45rem 0.75rem 0.5rem 1.4rem;
+    clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0.9rem 100%, 0 50%);
+    font-variant-numeric: tabular-nums;
+  }
+  .termurah small { display: block; font-size: 0.75rem; line-height: 1.2; max-width: 9rem; margin-left: auto; }
+  .termurah strong {
+    font: 800 1.25rem/1.1 "Bricolage Grotesque", Figtree, system-ui, sans-serif;
+    white-space: nowrap;
+  }
+
+  .toko { list-style: none; margin: 0.9rem 0 0; padding: 0; }
+  .toko li {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+    padding: 0.7rem 0; border-top: 1px solid var(--garis);
+    font-variant-numeric: tabular-nums;
+  }
+  .toko a { color: var(--biru); font-weight: 600; text-underline-offset: 3px; }
+  .harga { text-align: right; white-space: nowrap; }
+  .harga s { color: var(--redup); font-size: 0.875rem; margin-right: 0.4rem; }
+  .harga .potong { color: var(--diskon); font-size: 0.875rem; font-weight: 600; margin-right: 0.4rem; }
+  .harga .asal { display: block; color: var(--redup); font-size: 0.8125rem; }
+
+  footer { margin-top: 2.5rem; color: var(--redup); font-size: 0.875rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Harga game termurah</h1>
+  <p class="intro">Bandingkan harga dalam rupiah untuk PC, Mac, PlayStation, Xbox, dan Switch.</p>
+
+  <form id="cari" role="search">
+    <input type="search" id="q" name="q" placeholder="Nama game, misalnya Hades" aria-label="Nama game" autocomplete="off" required minlength="2">
+    <button type="submit" id="tombol">Cari harga</button>
+  </form>
+
+  <div class="saring" role="radiogroup" aria-label="Platform">
+    <label><input type="radio" name="platform" value="semua" checked><span>Semua</span></label>
+    <label><input type="radio" name="platform" value="pc"><span>PC</span></label>
+    <label><input type="radio" name="platform" value="mac"><span>Mac</span></label>
+    <label><input type="radio" name="platform" value="ps"><span>PlayStation</span></label>
+    <label><input type="radio" name="platform" value="xbox"><span>Xbox</span></label>
+    <label><input type="radio" name="platform" value="switch"><span>Switch</span></label>
+  </div>
+
+  <p id="status" aria-live="polite">Ketik nama game untuk melihat harganya.</p>
+  <div id="hasil"></div>
+
+  <footer>PC dan PlayStation memakai harga region Indonesia. Xbox memakai Australia dan Singapura, Switch memakai Malaysia dan Australia; harga bertanda ≈ dikonversi dengan kurs hari ini dan belum termasuk biaya transaksi luar negeri dari bank. Data diperbarui tiap jam.</footer>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const rupiah = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
+let data = null;
+
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function setStatus(teks, galat = false) {
+  $("status").textContent = teks;
+  $("status").className = galat ? "galat" : "";
+}
+
+function hargaTeks(o) {
+  if (o.idr === null) return "Gratis atau belum rilis";
+  if (o.idr === 0) return "Gratis";
+  return (o.converted ? "≈ " : "") + rupiah.format(o.idr);
+}
+
+const NAMA = { pc: "PC", mac: "Mac", ps: "PlayStation", xbox: "Xbox", switch: "Switch" };
+const SUMBER = { steam: "Steam", playstation: "PlayStation", xbox: "Xbox", switch: "Switch" };
+
+function render() {
+  if (!data) return;
+  const platform = document.querySelector('input[name="platform"]:checked').value;
+  const games = data.games
+    .map((g) => ({ ...g, offers: g.offers.filter((o) => platform === "semua" || o.platforms.includes(platform)) }))
+    .filter((g) => g.offers.length);
+
+  const gagal = Object.keys(SUMBER).filter((k) => data.sources[k] === "error").map((k) => SUMBER[k]);
+  let catatan = "";
+  if (gagal.length) catatan += ` Tidak bisa diakses saat ini: ${gagal.join(", ")}.`;
+  if (data.sources.itad === "off") catatan += " Toko PC selain Steam muncul setelah ITAD_KEY dipasang.";
+
+  if (!games.length) {
+    $("hasil").innerHTML = "";
+    setStatus((data.games.length
+      ? "Tidak ada hasil untuk platform ini. Coba pilih Semua."
+      : `Tidak ada game bernama "${data.query}". Periksa ejaannya atau coba judul bahasa Inggris.`) + catatan);
+    return;
+  }
+  setStatus(`${games.length} game ditemukan.` + catatan);
+
+  $("hasil").innerHTML = games.map((g) => {
+    const best = g.offers.find((o) => o.idr !== null) || g.offers[0];
+    const plats = Object.keys(NAMA).filter((k) => g.offers.some((o) => o.platforms.includes(k)));
+    const baris = g.offers.map((o) => {
+      const diskon = o.idr && o.regularIdr && o.regularIdr > o.idr
+        ? `<span class="potong">-${Math.round((1 - o.idr / o.regularIdr) * 100)}%</span><s>${rupiah.format(o.regularIdr)}</s>` : "";
+      const asal = o.original ? `<span class="asal">${esc(o.original)}</span>` : "";
+      return `<li><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.shop)}</a>
+        <span class="harga">${diskon}${hargaTeks(o)}${asal}</span></li>`;
+    }).join("");
+    return `<article class="game">
+      <div class="kepala">
+        <div><h2>${esc(g.name)}</h2><p class="platform">${plats.map((k) => NAMA[k]).join(", ")}</p></div>
+        <div class="termurah"><small>Termurah di ${esc(best.shop)}</small><strong>${hargaTeks(best)}</strong></div>
+      </div>
+      <ul class="toko">${baris}</ul>
+    </article>`;
+  }).join("");
+}
+
+$("cari").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = $("q").value.trim();
+  if (q.length < 2) return;
+  $("tombol").disabled = true;
+  $("hasil").innerHTML = "";
+  setStatus("Mencari harga…");
+  try {
+    const r = await fetch("/api/search?q=" + encodeURIComponent(q));
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || "Pencarian gagal.");
+    data = j;
+    render();
+  } catch (err) {
+    data = null;
+    setStatus(err.message.includes("JSON") || err.name === "TypeError"
+      ? "Server pencarian tidak bisa dihubungi. Pastikan halaman ini dibuka dari Cloudflare Pages, lalu coba lagi."
+      : err.message, true);
+  } finally {
+    $("tombol").disabled = false;
+  }
+});
+
+document.querySelectorAll('input[name="platform"]').forEach((el) => el.addEventListener("change", render));
+</script>
+</body>
+</html>
