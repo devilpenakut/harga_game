@@ -9,20 +9,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Figtree:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    /* Permukaan — color-step, bukan shadow (prinsip Origin) */
-    --kertas: #F4F5F9;   /* kanvas */
-    --lembar: #FFFFFF;   /* kartu */
-    --lembar-2: #ECEEF4; /* kartu tenggelam / hover */
+    /* ===== Token warna dari DESIGN.md Origin Financial (nilai asli) ===== */
+    --iris-gleam: #847dff;   /* aksen utama Origin */
+    --cyan-signal: #00b3dd;  /* aksen data Origin */
+    --pale-iris: #d1c9ff;    /* iris terang */
+    --deep-iris: #4b49aa;    /* iris gelap */
+    --orchid-bloom: #dd90d8; /* pink kategori */
+    --periwinkle: #90b8f0;   /* biru lembut */
+    --obsidian: #0f1011;     /* kanvas gelap Origin */
+    --abyss: #090a0b;
+    --graphite: #2e2e2e;     /* kartu gelap Origin */
+    --steel: #3f4041;
+    --silver: #cacaca;       /* permukaan terang terbalik */
+    --fog: #6a6b6b;
+    --ash: #9f9fa0;          /* body sekunder Origin */
+    --cloud: #f5f5f7;        /* heading lembut */
+    --pure: #ffffff;
+    --void: #000000;
+
+    /* ===== Pemetaan peran (opsi 2: tetap terang, kuning dipertahankan) ===== */
+    --kertas: var(--cloud);  /* kanvas = Cloud Origin */
+    --lembar: var(--pure);
+    --lembar-2: #ECEEF4;
     --tinta: #1B1F3B;
-    --redup: #636A8C;
+    --redup: var(--fog);     /* teks sekunder = Fog Origin (4.9:1) */
     --garis: #D5D9E8;
-    --biru: #2D4BDB;
-    --label: #FFD23F;       /* kuning harga termurah — dipertahankan */
+    --biru: var(--deep-iris);/* link = Deep Iris (bukan biru acak) */
+    --label: #FFD23F;        /* kuning harga termurah — dipertahankan */
     --label-tinta: #1B1F3B;
     --diskon: #C81E3A;
-    /* Aksen iris dari Origin, dipakai untuk badge/aksen sekunder */
-    --iris: #5B54E8;
-    --iris-lembut: #EEECFE;
+    /* Aksen memakai token Origin asli */
+    --iris: var(--iris-gleam);
+    --iris-lembut: #EFEDFF;
     color-scheme: light;
 
     /* Skala jarak (basis 4px) — dari sistem desain Origin */
@@ -48,16 +66,17 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --kertas: #14172B;
-      --lembar: #1E2240;
-      --lembar-2: #262B4D;
-      --tinta: #ECEEF8;
-      --redup: #9AA1C4;
-      --garis: #333963;
-      --biru: #8EA2FF;
+      /* Surface Origin persis: Obsidian canvas, Graphite card */
+      --kertas: var(--obsidian);
+      --lembar: #1b1c1e;
+      --lembar-2: var(--graphite);
+      --tinta: var(--cloud);
+      --redup: var(--ash);
+      --garis: #3a3b3d;
+      --biru: var(--pale-iris);
       --diskon: #FF7A8E;
-      --iris: #A79BFF;
-      --iris-lembut: #2A2750;
+      --iris: var(--pale-iris);
+      --iris-lembut: #26253d;
       color-scheme: dark;
     }
   }
@@ -135,16 +154,12 @@
     border: 1px solid var(--garis); border-radius: var(--r-pill); color: var(--redup);
     white-space: nowrap;
   }
-  .tag.t-game { color: var(--iris); border-color: var(--iris); background: var(--iris-lembut); font-weight: 500; }
-  .tag.t-dlc { color: #92500A; border-color: #E3B778; background: #FBF1E1; }
-  .tag.t-ost { color: #6B4BA8; border-color: #C9B6E8; background: #F3EEFB; }
-  .tag.t-gratis { color: #14683C; border-color: #A6D9BE; background: #E9F7EF; }
-  .tag.t-soon { color: #92500A; border-color: #E3B778; background: #FBF1E1; }
-  @media (prefers-color-scheme: dark) {
-    .tag.t-dlc, .tag.t-soon { color: #F0C88A; background: #2E2618; border-color: #6E5A34; }
-    .tag.t-ost { color: #C7B0EA; background: #262038; border-color: #514268; }
-    .tag.t-gratis { color: #8FD8B0; background: #16281E; border-color: #356148; }
-  }
+  /* Tiap kategori memakai token aksen Origin */
+  .tag.t-game { color: var(--void); border-color: var(--iris-gleam); background: var(--iris-gleam); font-weight: 500; }
+  .tag.t-dlc { color: var(--void); border-color: var(--orchid-bloom); background: var(--orchid-bloom); }
+  .tag.t-ost { color: var(--void); border-color: var(--periwinkle); background: var(--periwinkle); }
+  .tag.t-gratis { color: var(--void); border-color: var(--cyan-signal); background: var(--cyan-signal); }
+  .tag.t-soon { color: var(--void); border-color: var(--silver); background: var(--silver); }
 
   /* Label harga kuning: satu-satunya elemen yang menonjol */
   .termurah {
