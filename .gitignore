@@ -5,4 +5,6 @@ files.zip
 *.key
 itad.key
 test-local.mjs
+test-cache.mjs
+test-cache-fallback.mjs
 

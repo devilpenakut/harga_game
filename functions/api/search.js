@@ -28,20 +28,30 @@ export async function onRequestGet({ request, env, waitUntil }) {
   const q = (url.searchParams.get("q") || "").trim();
   if (q.length < 2) return json({ error: "Ketik minimal 2 huruf." }, 400);
 
-  const cache = caches.default;
-  const cacheKey = new Request(`${url.origin}/api/search?q=${enc(q.toLowerCase())}`);
-  const hit = await cache.match(cacheKey);
-  if (hit) return hit;
+  // Cache edge. Tidak semua runtime menyediakan Cache API, jadi semua akses
+  // dibungkus try/catch: kalau tidak ada, aplikasi tetap jalan lewat KV / fetch.
+  let cache = null;
+  let cacheKey = null;
+  try {
+    cache = caches.default;
+    cacheKey = new Request(`${url.origin}/api/search?q=${enc(q.toLowerCase())}`);
+    const hit = await cache.match(cacheKey);
+    if (hit) return hit;
+  } catch {
+    cache = null;
+  }
 
   // Cache global lewat KV (opsional, aktif kalau binding CACHE dipasang)
   const kvKey = "q:" + q.toLowerCase();
   if (env.CACHE) {
-    const saved = await env.CACHE.get(kvKey);
-    if (saved) {
-      return new Response(saved, {
-        headers: { "Content-Type": "application/json; charset=utf-8", "X-Cache": "KV" },
-      });
-    }
+    try {
+      const saved = await env.CACHE.get(kvKey);
+      if (saved) {
+        return new Response(saved, {
+          headers: { "Content-Type": "application/json; charset=utf-8", "X-Cache": "KV" },
+        });
+      }
+    } catch {}
   }
 
   const rates = await getRates();
@@ -77,9 +87,15 @@ export async function onRequestGet({ request, env, waitUntil }) {
     "Cache-Control": `public, s-maxage=${CACHE_SECONDS}`,
   });
   if (games.length) {
-    waitUntil(cache.put(cacheKey, res.clone()));
+    if (cache) {
+      try {
+        waitUntil(cache.put(cacheKey, res.clone()));
+      } catch {}
+    }
     if (env.CACHE) {
-      waitUntil(env.CACHE.put(kvKey, JSON.stringify(body), { expirationTtl: CACHE_SECONDS }));
+      try {
+        waitUntil(env.CACHE.put(kvKey, JSON.stringify(body), { expirationTtl: CACHE_SECONDS }));
+      } catch {}
     }
   }
   return res;
