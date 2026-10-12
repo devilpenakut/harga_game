@@ -300,22 +300,29 @@ function itadPlats(deal, fallback) {
 }
 
 /* ---------- PlayStation Store Indonesia ---------- */
+// Halaman pencarian sekarang dirender di klien, jadi panggil GraphQL-nya langsung.
+// Server hanya menerima persisted query: kalau hash ini ditolak ("not whitelisted"),
+// ambil hash baru dari request getSearchResults di DevTools store.playstation.com.
+const PS_HASH = "4df6284f982e57bec70f23c77e2c219dc792eb19af7fb3d3a81767aa3f1958aa";
 async function playstation(q) {
-  const r = await get(`https://store.playstation.com/en-id/search/${enc(q)}`);
+  const vars = { countryCode: "ID", languageCode: "en", nextCursor: "", pageOffset: 0, pageSize: 24, searchTerm: q };
+  const ext = { persistedQuery: { version: 1, sha256Hash: PS_HASH } };
+  const r = await get(
+    `https://web.np.playstation.com/api/graphql/v1/op?operationName=getSearchResults&variables=${enc(JSON.stringify(vars))}&extensions=${enc(JSON.stringify(ext))}`,
+    { headers: { "Content-Type": "application/json", "x-psn-store-locale-override": "en-ID" } }
+  );
   if (!r.ok) throw new Error(`PS ${r.status}`);
-  const m = (await r.text()).match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
-  if (!m) throw new Error("PS: data tidak ditemukan");
-  const state = JSON.parse(m[1]).props.apolloState || {};
-  const deref = (v) => (v && (v.__ref || v.id) && state[v.__ref || v.id]) || v;
-  const num = (s) => (s ? Number(String(s).replace(/[^\d]/g, "")) : null);
+  const results = (await r.json()).data?.universalSearch?.results;
+  if (!results) throw new Error("PS: data tidak ditemukan");
+  const num = (s) => (/\d/.test(s || "") ? Number(String(s).replace(/[^\d]/g, "")) : null);
 
   const out = [];
-  for (const p of Object.values(state)) {
-    if (!p || p.__typename !== "Product" || !p.name) continue;
+  for (const p of results) {
+    if (p.__typename !== "Product" || !p.name) continue;
     if (!relevan(p.name, q)) continue;
     const cls = p.storeDisplayClassification || "";
     if (!/GAME|EDITION|BUNDLE/.test(cls)) continue;
-    const price = deref(p.price);
+    const price = p.price;
     if (!price) continue;
     const now = price.isFree ? 0 : num(price.discountedPrice || price.basePrice);
     out.push({
@@ -336,7 +343,7 @@ async function xbox(q, rates) {
   );
   if (!s.ok) throw new Error(`Xbox ${s.status}`);
   const suggests = ((await s.json()).ResultSets?.[0]?.Suggests || []).filter(
-    (x) => x.Source === "Games" && relevan(x.Title || "", q)
+    (x) => /^Games?$/.test(x.Source) && relevan(x.Title || "", q) // dulu "Games", sekarang "Game"
   );
   const ids = suggests
     .map((x) => (x.Metas || []).find((m) => m.Key === "BigCatalogId")?.Value)
