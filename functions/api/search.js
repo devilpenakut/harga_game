@@ -1,7 +1,7 @@
 // GET /api/search?q=nama+game
 // PC/Mac  : Steam (IDR) + IsThereAnyDeal (opsional, env ITAD_KEY)
 // PS      : PlayStation Store Indonesia (IDR)
-// Xbox    : Microsoft Store Australia (AUD) + Singapura (SGD), dikonversi ke IDR
+// Xbox    : Microsoft Store Australia (AUD) + Singapura (SGD) + Turki (TRY), dikonversi ke IDR
 // Switch  : Nintendo eShop Malaysia (MYR) + Australia (AUD), dikonversi ke IDR
 // Semua sumber selain ITAD tidak resmi dan bisa berubah sewaktu-waktu.
 
@@ -336,7 +336,7 @@ async function playstation(q) {
   return out;
 }
 
-/* ---------- Xbox: Australia + Singapura ---------- */
+/* ---------- Xbox: Australia + Singapura + Turki ---------- */
 async function xbox(q, rates) {
   const s = await get(
     `https://www.microsoft.com/msstoreapiprod/api/autosuggest?market=en-au&sources=DCatAll-Products&filter=%2BClientType%3AStoreWeb&counts=10&query=${enc(q)}`
@@ -354,6 +354,7 @@ async function xbox(q, rates) {
   const markets = [
     { code: "AU", lang: "en-au", label: "Xbox Store Australia" },
     { code: "SG", lang: "en-sg", label: "Xbox Store Singapura" },
+    { code: "TR", lang: "tr-tr", label: "Xbox Store Turki" },
   ];
   const byId = new Map();
   await Promise.all(markets.map(async (mk) => {

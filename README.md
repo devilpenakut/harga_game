@@ -9,7 +9,7 @@ Aplikasi web untuk membandingkan harga sebuah game di PC, Mac, PlayStation, Xbox
 | PC, Mac | Steam | Indonesia | IDR |
 | PC, Mac | Epic, GOG, Humble, dll. lewat IsThereAnyDeal (opsional) | Indonesia | IDR atau dikonversi |
 | PlayStation | PlayStation Store | Indonesia | IDR |
-| Xbox | Microsoft Store | Australia, Singapura | AUD, SGD, dikonversi |
+| Xbox | Microsoft Store | Australia, Singapura, Turki | AUD, SGD, TRY, dikonversi |
 | Switch | Nintendo eShop | Malaysia, Australia | MYR, AUD, dikonversi |
 
 Harga bertanda ≈ dikonversi ke rupiah dengan kurs tengah harian dari open.er-api.com. Tagihan kartu akan sedikit lebih tinggi karena kurs bank dan biaya transaksi luar negeri.
