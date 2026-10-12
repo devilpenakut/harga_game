@@ -36,7 +36,8 @@
     --garis: #D5D9E8;
     --biru: var(--deep-iris);/* link = Deep Iris (bukan biru acak) */
     --label: #FFD23F;        /* kuning harga termurah — dipertahankan */
-    --diskon: #C81E3A;
+    --di-label: #1B1F3B;     /* teks di atas kuning: tetap gelap di kedua tema */
+    --diskon: #B91C36;
 
     /* ===== Surface stepping (prinsip Origin: depth lewat warna, bukan shadow) =====
        1 kartu -> 2 area terangkat -> 3 hover/tertekan (0 = --kertas) */
@@ -76,7 +77,7 @@
       --redup: var(--ash);
       --garis: #3a3b3d;
       --biru: var(--pale-iris);
-      --diskon: #FF7A8E;
+      --diskon: #FF94A3;
       /* Surface stepping versi gelap — Obsidian -> Graphite -> Steel */
       --srf-1: #1b1c1e;
       --srf-2: var(--graphite);
@@ -120,12 +121,13 @@
   }
   button[disabled] { opacity: 0.6; cursor: progress; }
   :focus-visible { outline: 3px solid var(--biru); outline-offset: 2px; }
-  ::selection { background: var(--label); color: var(--tinta); }
+  ::selection { background: var(--label); color: var(--di-label); }
   input[type="search"]::placeholder { color: var(--redup); opacity: 1; }
 
   .saring { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-4) 0 0; }
   .saring label {
-    padding: var(--sp-1) var(--sp-3); border: 1.5px solid var(--garis); border-radius: var(--r-pill);
+    display: inline-flex; align-items: center; min-height: 2.75rem; /* target sentuh 44px */
+    padding: 0 var(--sp-4); border: 1.5px solid var(--garis); border-radius: var(--r-pill);
     font: 400 0.8125rem/1.4 var(--f-mono); letter-spacing: 0.02em;
     cursor: pointer; color: var(--redup);
   }
@@ -171,7 +173,7 @@
   /* Label harga kuning: satu-satunya elemen yang menonjol */
   .termurah {
     flex: none; text-align: right;
-    background: var(--label); color: var(--tinta);
+    background: var(--label); color: var(--di-label);
     padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-5);
     clip-path: polygon(0.9rem 0, 100% 0, 100% 100%, 0.9rem 100%, 0 50%);
     font-variant-numeric: tabular-nums;
@@ -197,7 +199,8 @@
     font-variant-numeric: tabular-nums;
   }
   .toko li:first-child { border-top: 0; }
-  .toko li:hover { background: var(--srf-3); }
+  /* Hover lebih gelap/terang dari --redup: naikkan teks sekunder ke --tinta agar tetap >= 4.5:1 */
+  .toko li:hover { background: var(--srf-3); --redup: var(--tinta); }
   .toko a { color: var(--biru); font-weight: 600; text-underline-offset: 3px; }
   .harga { text-align: right; white-space: nowrap; font-family: var(--f-mono); font-size: 0.9375rem; }
   .harga s { color: var(--redup); font-size: 0.8125rem; margin-right: var(--sp-1); }
@@ -227,7 +230,7 @@
   </div>
 
   <p id="status" role="status" aria-live="polite">Ketik nama game untuk melihat harganya.</p>
-  <div id="hasil" aria-live="polite" aria-busy="false"></div>
+  <div id="hasil" aria-busy="false"></div>
 
   <footer>PC dan PlayStation memakai harga region Indonesia. Xbox memakai Australia dan Singapura, Switch memakai Malaysia dan Australia; harga bertanda ≈ dikonversi dengan kurs hari ini dan belum termasuk biaya transaksi luar negeri dari bank. Data diperbarui tiap jam.</footer>
 </main>
